@@ -3,12 +3,15 @@ import random
 
 class Gene(object):
 	"""docstring for Gene"""
-	def __init__(self, velocidade = (0,0), random = False):
+	def __init__(self, velocidade = (0,0), rand = False):
 		super(Gene, self).__init__()
-		if not random:
+		if not rand:
 			self.setVelocidades(velocidade)
 		else: 
 			self.setVelocidades(self.velocidadeAleatoria()) 
+
+	def __str__(self):
+		return str(self.getVelocidades())
 
 
 	def getVelocidades(self):

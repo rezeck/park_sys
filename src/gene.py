@@ -14,6 +14,9 @@ class Gene(object):
 	def getVelocidades(self):
 		return (self.linear, self.angular)
 
+	def getVelocidadesEnvio(self):
+		return self.getVelocidades()
+
 	def setVelocidades(self, velocidade):
 		self.linear = velocidade[0]
 		self.angular = velocidade[1]

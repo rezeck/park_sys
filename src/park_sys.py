@@ -8,10 +8,12 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 from std_srvs.srv import Empty
+import matplotlib.pyplot as plt
+
 
 class Solver(object):
 	"""docstring for Solver"""
-	def __init__(self, num_gen = 10, num_pop = 10):
+	def __init__(self, num_gen = 10, num_pop = 10, show_output = True):
 		super(Solver, self).__init__()
 		self.laser = None
 		self.odom = None
@@ -19,11 +21,15 @@ class Solver(object):
 		self.goal_x = rospy.get_param("/park_sys/goal_x")
 		self.goal_y = rospy.get_param("/park_sys/goal_y")
 		self.goal_theta = rospy.get_param("/park_sys/goal_theta")
-		print "[Status]: Park position ", self.goal_x, self.goal_y, self.goal_theta
 		self.num_gen = num_gen
 		self.num_pop = num_pop
+		self.show_output = show_output
+		self.statistics = []
+
+		print "[Status]: Park position ", self.goal_x, self.goal_y, self.goal_theta
 		print "[Status]: Generation size", num_gen, "and Population size ", num_pop
 		print "[Status]: Creating population..."
+		
 		self.pop = []
 		for i in range(self.num_pop):
 			ind = Individuo(rand=True)
@@ -70,6 +76,9 @@ class Solver(object):
 		return self.fitness()
 
 	def run(self):
+		#initialize matplotlib
+		plt.ion()
+
 		rospy.init_node('park_sys', anonymous=False)
 		print "[Status]: Running node park_sys..."
 		self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=10)	
@@ -79,16 +88,66 @@ class Solver(object):
 		self.rate = rospy.Rate(1) # 10hz
 		
 		while not rospy.is_shutdown():
-			for g in range(self.num_gen):
+
+			self.calculateFitnessPopulation()
+			self.updateStatiscs()
+
+			for g in range(1,self.num_gen):
 				print "################################"
 				print "[Status]: Generation #", g
 				print "################################"
-				for p in range(self.num_pop):
-					print "[Status]: Testing individo ", p, "\n", self.pop[p].getVelocidades()
-					self.pop[p].fitness = self.test(self.pop[p])
-					print "[Status]: Fitness ", self.pop[p].fitness
-					print "################################"
-			self.rate.sleep()
+				
+				self.calculateFitnessPopulation()
+				
+				self.updateStatiscs()
+
+				self.rate.sleep() 
+
+	def calculateFitnessPopulation(self):
+		for p in range(self.num_pop):
+			print "[Status]: Testing individo ", p
+			self.pop[p].fitness = self.test(self.pop[p])
+			print "          Fitness ", self.pop[p].fitness
+
+	def updateStatiscs(self):
+		population_fitness = [ i.getFitness() for i in self.pop ]
+		best_fit = min(population_fitness)
+		worst_fit = max(population_fitness)
+		average_fit = sum(population_fitness) / float(len(population_fitness))
+
+		self.statistics.append({'best': best_fit, 'worst': worst_fit, 'average': average_fit })
+		print "[Status]: Statistics for LAST generation "
+		print "         ", self.statistics[-1]
+
+		self.showStatistics()
+		
+
+
+
+	def showStatistics(self):
+
+		best = [ s['best'] for s in self.statistics ]
+		worst = [ s['worst'] for s in self.statistics ]
+		average = [ s['average'] for s in self.statistics ]
+		gen = range(len(best))
+
+
+		fig = plt.figure(1)
+		plt.clf()
+		plt.title('Fitness Evolution')
+		plt.xlabel('Generation')
+		plt.ylabel('Fitness')
+
+		plt.plot(gen, best,    'r-', label='Best')
+		plt.plot(gen, worst,   'b-', label='Worst')
+		plt.plot(gen, average, 'g-', label='Average')
+
+		plt.pause(0.0001)
+
+
+
+
+		pass
 
 if __name__ == '__main__':
 	try:

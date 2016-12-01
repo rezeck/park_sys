@@ -10,7 +10,7 @@ paused 0
 # configure the GUI window
 window
 (
-  size [ 958 1027 ] # in pixels
+  size [ 958 716 ] # in pixels
   scale 444.035   # pixels per meter
   center [ -0.904  -1.765 ]
   rotate [ 0.000  0.000]
@@ -33,7 +33,7 @@ car
 (		  
   # can refer to the robot by this name
   name "car"
-  pose [ -0.855 -1.646 0.000 0.000 ] 
+  pose [ -0.863 -1.648 0.000 0.000 ] 
 
   # pioneer2dx's sonars	will be ranger:0 and the laser will be ranger:1
   fancysicklaser( pose [ 0.000 0.000 0.000 0.000 ] ) 

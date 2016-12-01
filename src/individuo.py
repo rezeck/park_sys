@@ -16,6 +16,9 @@ class Individuo(object):
 
 	def getGenes(self):
 		return self.genes
+	
+	def getFitness(self):
+		return self.fitness
 
 	def size(self):
 		return len(self.genes)

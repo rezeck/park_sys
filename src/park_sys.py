@@ -85,7 +85,8 @@ class Solver(object):
 				print "################################"
 				for p in range(self.num_pop):
 					print "[Status]: Testing individo ", p, "\n", self.pop[p].getVelocidades()
-					print "[Status]: Fitness ", self.test(self.pop[p])
+					self.pop[p].fitness = self.test(self.pop[p])
+					print "[Status]: Fitness ", self.pop[p].fitness
 					print "################################"
 			self.rate.sleep()
 

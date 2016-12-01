@@ -2,6 +2,7 @@
 
 import gene
 import random
+import sys
 
 class Individuo(object):
 	"""docstring for Individuo"""
@@ -9,6 +10,7 @@ class Individuo(object):
 		super(Individuo, self).__init__()
 		self.genes = genes
 		self.initialSize = initialSize
+		self.fitness = sys.maxint
 		if rand:
 			self.inicializarAleatorio()
 

@@ -36,7 +36,7 @@ car
   pose [ -0.863 -1.648 0.000 0.000 ] 
 
   # pioneer2dx's sonars	will be ranger:0 and the laser will be ranger:1
-  fancysicklaser( pose [ 0.000 0.000 0.000 0.000 ] ) 
+  # fancysicklaser( pose [ 0.000 0.000 0.000 0.000 ] ) 
  
   # report error-free position in world coordinates
   localization "gps"

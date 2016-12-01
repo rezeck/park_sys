@@ -11,12 +11,26 @@ class Individuo(object):
 		self.genes = genes
 		self.initialSize = initialSize
 		self.fitness = sys.maxint
+		self.probability = {'alterar': 0.3, 'acrescentar': 0.3, 'remover': 0.3}
+
 		if rand:
 			self.inicializarAleatorio()
 
+	def __gt__(self, other):
+		return self.getFitness() > other.getFitness()
+
+	def __lt__(self, other):
+		return self.getFitness() < other.getFitness()
+
+	def __le__(self, other):
+		return self.getFitness() <= other.getFitness()
+
+	def __ge__(self, other):
+		return self.getFitness() >= other.getFitness()
+
 	def getGenes(self):
 		return self.genes
-	
+
 	def getFitness(self):
 		return self.fitness
 
@@ -30,13 +44,12 @@ class Individuo(object):
 		self.genes = [gene.Gene(rand = True) for x in xrange(self.initialSize)]
 
 	def mutacao(self):
-		if True:
-			self.mutAlterar()
-		elif True:
-			self.mutAcrescentar()
-		else:
-			self.mutRemover()
-
+		if random.random() < self.probability['alterar']:
+			self._mutAlterar()
+		if random.random() < self.probability['acrescentar']:
+			self._mutAcrescentar()
+		if random.random() < self.probability['remover']:
+			self._mutRemover()
 
 	def _mutRemover(self):
 		if len(self.genes) <= 1:
@@ -69,6 +82,9 @@ class Individuo(object):
 
 		filho1 = Individuo(genes = genes1)
 		filho2 = Individuo(genes = genes2)
+
+		filho1.mutacao()
+		filho2.mutacao()
 
 		return (filho1, filho2)
 

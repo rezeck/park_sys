@@ -3,6 +3,8 @@
 import rospy
 import tf
 import math
+import random
+
 from individuo import Individuo
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
@@ -13,7 +15,7 @@ import matplotlib.pyplot as plt
 
 class Solver(object):
 	"""docstring for Solver"""
-	def __init__(self, num_gen = 10, num_pop = 10, show_output = True):
+	def __init__(self, num_gen = 200, num_pop = 20, show_output = True):
 		super(Solver, self).__init__()
 		self.laser = None
 		self.odom = None
@@ -31,8 +33,9 @@ class Solver(object):
 		print "[Status]: Creating population..."
 		
 		self.pop = []
+		self.filhos = []
 		for i in range(self.num_pop):
-			ind = Individuo(rand=True)
+			ind = Individuo(rand=True, initialSize = 20)
 			self.pop.append(ind)
 
 	def odomCallback(self, data):
@@ -57,15 +60,16 @@ class Solver(object):
 	def reset_position(self):
 		self.reset_stage()
 
-	def fitness(self, collision_penality=2.0):
+	def fitness(self, collision_penality=1.2):
 		if self.checkCollision():
-			return self.dist*collision_penality
+			return self.dist*collision_penality + 1.0
 		else:
 			return self.dist
 
 	def test(self, ind):
 		self.reset_position()
 		t = Twist()
+
 		for command in ind.getVelocidades():
 			if self.checkCollision():
 				break
@@ -87,21 +91,25 @@ class Solver(object):
 
 		self.rate = rospy.Rate(1) # 10hz
 		
-		while not rospy.is_shutdown():
 
-			self.calculateFitnessPopulation()
-			self.updateStatiscs()
+		self.calculateFitnessPopulation()
+		self.updateStatiscs()
+		self.pop.sort()	
+
+		while not rospy.is_shutdown():
 
 			for g in range(1,self.num_gen):
 				print "################################"
 				print "[Status]: Generation #", g
 				print "################################"
-				
-				self.calculateFitnessPopulation()
-				
-				self.updateStatiscs()
 
+				self.createFilhos()
+				self.calculateFitnessFilhos()
+				self.selectNextGeneration()
+
+				self.updateStatiscs()
 				self.rate.sleep() 
+			break
 
 	def calculateFitnessPopulation(self):
 		for p in range(self.num_pop):
@@ -109,14 +117,58 @@ class Solver(object):
 			self.pop[p].fitness = self.test(self.pop[p])
 			print "          Fitness ", self.pop[p].fitness
 
+	def calculateFitnessFilhos(self):
+		for p in range(len(self.filhos)):
+			print "[Status]: Testing filho ", p
+			self.filhos[p].fitness = self.test(self.filhos[p])
+			print "          Fitness ", self.filhos[p].fitness
+
+
+	def torneio(self, size = 2):
+		subPop = random.sample(self.pop, size)
+		vencedor = subPop.pop(0)
+		for ind in subPop:
+			if vencedor > ind:
+				vencedor = ind
+		return vencedor
+
+	def createFilhos(self):
+		self.filhos = []
+		for x in range(len(self.pop)/2):
+			pai_1 = self.torneio(size = 2)
+			pai_2 = self.torneio(size = 2)
+			(filho1, filho2) = pai_1.cruzamento(pai_2)
+			self.filhos.append(filho1)
+			self.filhos.append(filho2)
+
+	def selectNextGeneration(self, size_torneio = 2 ):
+
+		todos = self.pop + self.filhos
+		todos.sort()
+
+		next_gen = []
+		next_gen.append(self.pop[0])
+
+		while len(next_gen) < self.num_pop:
+			vencedor_index = min(random.sample(range(len(todos)), size_torneio))
+			next_gen.append(todos.pop(vencedor_index))
+
+		self.pop = next_gen
+
 	def updateStatiscs(self):
 		population_fitness = [ i.getFitness() for i in self.pop ]
+		population_size = [ i.size() for i in self.pop ]
 		best_fit = min(population_fitness)
 		worst_fit = max(population_fitness)
 		average_fit = sum(population_fitness) / float(len(population_fitness))
+		
+		best_size = min(population_size)
+		worst_size = max(population_size)
+		average_size = sum(population_size) / float(len(population_size))
 
-		self.statistics.append({'best': best_fit, 'worst': worst_fit, 'average': average_fit })
-		print "[Status]: Statistics for LAST generation "
+		self.statistics.append({'best': best_fit, 'worst': worst_fit, 'average': average_fit,
+								'best_size': best_size, 'worst_size': worst_size, 'average_size': average_size })
+		print "[Status]: LAST Generation Statistics:"
 		print "         ", self.statistics[-1]
 
 		self.showStatistics()
@@ -129,25 +181,48 @@ class Solver(object):
 		best = [ s['best'] for s in self.statistics ]
 		worst = [ s['worst'] for s in self.statistics ]
 		average = [ s['average'] for s in self.statistics ]
+		
+		best_size = [ s['best_size'] for s in self.statistics ]
+		worst_size = [ s['worst_size'] for s in self.statistics ]
+		average_size = [ s['average_size'] for s in self.statistics ]
+		
 		gen = range(len(best))
 
 
+		# fitness
 		fig = plt.figure(1)
 		plt.clf()
+		plt.axis([0, len(gen), 0, max(worst)*1.3])
+
 		plt.title('Fitness Evolution')
 		plt.xlabel('Generation')
 		plt.ylabel('Fitness')
 
-		plt.plot(gen, best,    'r-', label='Best')
-		plt.plot(gen, worst,   'b-', label='Worst')
-		plt.plot(gen, average, 'g-', label='Average')
+		leg_b, = plt.plot(gen, best,    'r-', label='Best')
+		leg_w, = plt.plot(gen, worst,   'b-', label='Worst')
+		leg_a, = plt.plot(gen, average, 'g-', label='Average')
+
+		plt.legend(handles=[leg_b, leg_w, leg_a])
 
 		plt.pause(0.0001)
 
+		# tamGenes
+		fig = plt.figure(2)
+		plt.clf()
+		plt.axis([0, len(gen), 0, max(worst_size)*1.3])
 
+		plt.title('Size Evolution')
+		plt.xlabel('Generation')
+		plt.ylabel('Gene Size')
 
+		leg_b, = plt.plot(gen, best_size,    'r-', label='Best')
+		leg_w, = plt.plot(gen, worst_size,   'b-', label='Worst')
+		leg_a, = plt.plot(gen, average_size, 'g-', label='Average')
 
-		pass
+		plt.legend(handles=[leg_b, leg_w, leg_a])
+
+		plt.pause(0.0001)
+
 
 if __name__ == '__main__':
 	try:

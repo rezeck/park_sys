@@ -68,12 +68,12 @@ class Individuo(object):
 		return (filho1, filho2)
 
 
-if __name__ == '__main__':
-	ind1 = Individuo(rand = True)
-	ind2 = Individuo(rand = True)
+#if __name__ == '__main__':
+#	ind1 = Individuo(rand = True)
+#	ind2 = Individuo(rand = True)
 
-	print "ind 1", ind1.getVelocidades()
-	print "ind 2", ind2.getVelocidades()
+#	print "ind 1", ind1.getVelocidades()
+#	print "ind 2", ind2.getVelocidades()
 	
 	''' como gerar filhos'''
 	#filho1, filho2 = ind1.cruzamento(ind2)

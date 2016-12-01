@@ -51,21 +51,23 @@ class Solver(object):
 	def reset_position(self):
 		self.reset_stage()
 
-	def fitness(self):
-		if checkCollision():
-			return self.dist*5
+	def fitness(self, collision_penality=2.0):
+		if self.checkCollision():
+			return self.dist*collision_penality
 		else:
 			return self.dist
 
 	def test(self, ind):
 		self.reset_position()
-		print "ind 1", ind.getVelocidades()
+		t = Twist()
 		for command in ind.getVelocidades():
-			t = Twist()
+			if self.checkCollision():
+				break
 			t.linear.x = command[0]*0.5
-			t.angular.z = command[1]*math.pi/2
+			t.angular.z = command[1]*1.0
 			self.pub_cmd_vel.publish(t)
 			self.rate.sleep()
+		return self.fitness()
 
 	def run(self):
 		rospy.init_node('park_sys', anonymous=False)
@@ -77,7 +79,14 @@ class Solver(object):
 		self.rate = rospy.Rate(1) # 10hz
 		
 		while not rospy.is_shutdown():
-			self.test(self.pop[0])
+			for g in range(self.num_gen):
+				print "################################"
+				print "[Status]: Generation #", g
+				print "################################"
+				for p in range(self.num_pop):
+					print "[Status]: Testing individo ", p, "\n", self.pop[p].getVelocidades()
+					print "[Status]: Fitness ", self.test(self.pop[p])
+					print "################################"
 			self.rate.sleep()
 
 if __name__ == '__main__':

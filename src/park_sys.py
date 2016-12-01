@@ -68,6 +68,7 @@ class Solver(object):
 
 	def test(self, ind):
 		self.reset_position()
+		
 		t = Twist()
 
 		for command in ind.getVelocidades():

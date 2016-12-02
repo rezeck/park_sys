@@ -6,6 +6,11 @@
   	<param name="goal_x" type="double" value="0.38" />
   	<param name="goal_y" type="double" value="-2.39" />
   	<param name="goal_theta" type="double" value="0.0" />
+  
+	<param name="goal_parcial_x" type="double" value="1.18" />
+  	<param name="goal_parcial_y" type="double" value="-1.94" />
+  	<param name="goal_parcial_theta" type="double" value="0.0" />
+  
   </node>
 
 </launch>

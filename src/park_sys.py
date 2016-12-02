@@ -15,14 +15,24 @@ import matplotlib.pyplot as plt
 
 class Solver(object):
 	"""docstring for Solver"""
-	def __init__(self, num_gen = 200, num_pop = 20, show_output = True):
+	def __init__(self, num_gen = 200, num_pop = 60, show_output = True):
 		super(Solver, self).__init__()
 		self.laser = None
 		self.odom = None
 		self.dist = 0.0
+		
 		self.goal_x = rospy.get_param("/park_sys/goal_x")
 		self.goal_y = rospy.get_param("/park_sys/goal_y")
 		self.goal_theta = rospy.get_param("/park_sys/goal_theta")
+		
+		self.goal_final_x = rospy.get_param("/park_sys/goal_x")
+		self.goal_final_y = rospy.get_param("/park_sys/goal_y")
+		self.goal_final_theta = rospy.get_param("/park_sys/goal_theta")
+		
+		self.goal_parcial_x = rospy.get_param("/park_sys/goal_parcial_x")
+		self.goal_parcial_y = rospy.get_param("/park_sys/goal_parcial_y")
+		self.goal_parcial_theta = rospy.get_param("/park_sys/goal_parcial_theta")
+
 		self.num_gen = num_gen
 		self.num_pop = num_pop
 		self.show_output = show_output

@@ -15,28 +15,21 @@ import matplotlib.pyplot as plt
 
 class Solver(object):
 	"""docstring for Solver"""
-	def __init__(self, num_gen = 200, num_pop = 60, show_output = True):
+	def __init__(self, num_gen = 200, num_pop = 30, show_output = True):
 		super(Solver, self).__init__()
 		self.laser = None
 		self.odom = None
 		self.dist = 0.0
 		
-		self.goal_x = rospy.get_param("/park_sys/goal_x")
-		self.goal_y = rospy.get_param("/park_sys/goal_y")
-		self.goal_theta = rospy.get_param("/park_sys/goal_theta")
-		
-		self.goal_final_x = rospy.get_param("/park_sys/goal_x")
-		self.goal_final_y = rospy.get_param("/park_sys/goal_y")
-		self.goal_final_theta = rospy.get_param("/park_sys/goal_theta")
-		
-		self.goal_parcial_x = rospy.get_param("/park_sys/goal_parcial_x")
-		self.goal_parcial_y = rospy.get_param("/park_sys/goal_parcial_y")
-		self.goal_parcial_theta = rospy.get_param("/park_sys/goal_parcial_theta")
+		self.changeToPartialGoal()
 
 		self.num_gen = num_gen
 		self.num_pop = num_pop
 		self.show_output = show_output
 		self.statistics = []
+
+		self.simulateFinal = False
+		self.bestPartialInd = None
 
 		print "[Status]: Park position ", self.goal_x, self.goal_y, self.goal_theta
 		print "[Status]: Generation size", num_gen, "and Population size ", num_pop
@@ -47,6 +40,28 @@ class Solver(object):
 		for i in range(self.num_pop):
 			ind = Individuo(rand=True, initialSize = 20)
 			self.pop.append(ind)
+
+	def getBestIndividuo(self):
+		self.pop.sort()
+		return self.pop[0]
+
+	def inicializarPopulacao(self, initialSize = 20):
+		self.pop = []
+		self.filhos = []
+		for i in range(self.num_pop):
+			ind = Individuo(rand=True, initialSize = initialSize)
+			self.pop.append(ind)
+
+	def changeToFinalGoal(self):
+		self.goal_x = rospy.get_param("/park_sys/goal_x")
+		self.goal_y = rospy.get_param("/park_sys/goal_y")
+		self.goal_theta = rospy.get_param("/park_sys/goal_theta")
+		
+	def changeToPartialGoal(self):
+		self.goal_x = rospy.get_param("/park_sys/goal_parcial_x")
+		self.goal_y = rospy.get_param("/park_sys/goal_parcial_y")
+		self.goal_theta = rospy.get_param("/park_sys/goal_parcial_theta")
+		
 
 	def odomCallback(self, data):
 		self.odom = data
@@ -80,7 +95,12 @@ class Solver(object):
 		self.reset_position()
 		t = Twist()
 
-		for command in ind.getVelocidades():
+		commandVel = ind.getVelocidades()
+
+		if self.simulateFinal:
+			commandVel = self.bestPartialInd.getVelocidades + commandVel
+
+		for command in commandVel:
 			if self.checkCollision():
 				break
 			t.linear.x = command[0]*0.5
@@ -119,7 +139,33 @@ class Solver(object):
 
 				self.updateStatiscs()
 				self.rate.sleep() 
-			break
+
+				if self.statistics[-1]['best'] < 0.05:
+					break
+
+			self.bestPartialInd = self.getBestIndividuo()
+			self.simulateFinal = True
+			self.changeToFinalGoal()
+			self.inicializarPopulacao(initialSize = 20)
+
+			for g in range(1,self.num_gen):
+				print "################################"
+				print "[Status]: Generation tipo 2 #", g
+				print "################################"
+
+				self.createFilhos()
+				self.calculateFitnessFilhos()
+				self.selectNextGeneration()
+
+				self.updateStatiscs()
+				self.rate.sleep() 
+
+				if self.statistics[-1]['best'] < 0.05:
+					break
+
+
+
+
 
 	def calculateFitnessPopulation(self):
 		for p in range(self.num_pop):

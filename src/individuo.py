@@ -11,7 +11,7 @@ class Individuo(object):
 		self.genes = genes
 		self.initialSize = initialSize
 		self.fitness = sys.maxint
-		self.probability = {'alterar': 0.3, 'acrescentar': 0.3, 'remover': 0.3}
+		self.probability = {'alterar': 0.3, 'acrescentar': 0.3, 'acrescentar_fim': 0.3, 'remover': 0.0, 'cruzamento': 1.0}
 
 		if rand:
 			self.inicializarAleatorio()
@@ -44,10 +44,14 @@ class Individuo(object):
 		self.genes = [gene.Gene(rand = True) for x in xrange(self.initialSize)]
 
 	def mutacao(self):
+		
 		if random.random() < self.probability['alterar']:
 			self._mutAlterar()
 		if random.random() < self.probability['acrescentar']:
-			self._mutAcrescentar()
+			if random.random() < self.probability['acrescentar_fim']:
+				self._mutAcrescentarFim()
+			else: 
+				self._mutAcrescentar()
 		if random.random() < self.probability['remover']:
 			self._mutRemover()
 
@@ -62,6 +66,10 @@ class Individuo(object):
 		g = gene.Gene(rand = True) 
 		self.genes.insert(pos, g)
 
+	def _mutAcrescentarFim(self):
+		g = gene.Gene(rand = True) 
+		self.genes.append(g)
+
 	def _mutAlterar(self):
 		pos = random.randint(0, len(self.genes)-1)
 		g = gene.Gene(rand = True) 
@@ -71,7 +79,7 @@ class Individuo(object):
 		parent1 = self
 		minLen = min(parent1.size(),parent2.size())
 
-		if minLen <= 1:
+		if minLen <= 1 or random.random() < self.probability['cruzamento']:
 			genes1 = parent1.getGenes()
 			genes2 = parent2.getGenes()
 		else:

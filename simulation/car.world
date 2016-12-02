@@ -11,8 +11,8 @@ paused 1
 window
 (
   size [ 958 716 ] # in pixels
-  scale 227.860   # pixels per meter
-  center [ 0.438  -1.636 ]
+  scale 188.314   # pixels per meter
+  center [ 0.403  -1.928 ]
   rotate [ 0.000  0.000]
   			
   show_data 1              # 1=on 0=off
@@ -33,7 +33,10 @@ car
 (		  
   # can refer to the robot by this name
   name "car"
-  pose [ 1.468 -1.852 0.000 -1.108 ] 
+
+  pose [ 1.05 -1.97 0.000 0 ] 
+  #pose [ -1.180 -1.785 0.000 0 ] 
+
 
   # pioneer2dx's sonars	will be ranger:0 and the laser will be ranger:1
   # fancysicklaser( pose [ 0.000 0.000 0.000 0.000 ] ) 

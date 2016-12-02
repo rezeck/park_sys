@@ -4,6 +4,7 @@ import rospy
 import tf
 import math
 import random
+import time
 
 from individuo import Individuo
 from geometry_msgs.msg import Twist
@@ -15,14 +16,20 @@ import matplotlib.pyplot as plt
 
 class Solver(object):
 	"""docstring for Solver"""
-	def __init__(self, num_gen = 200, num_pop = 20, show_output = True):
+	def __init__(self, num_gen = 100, num_pop = 20, show_output = True):
 		super(Solver, self).__init__()
 		self.laser = None
 		self.odom = None
 		self.dist = 0.0
+		
 		self.goal_x = rospy.get_param("/park_sys/goal_x")
 		self.goal_y = rospy.get_param("/park_sys/goal_y")
 		self.goal_theta = rospy.get_param("/park_sys/goal_theta")
+		
+		self.goal_parcial_x = rospy.get_param("/park_sys/goal_parcial_x")
+		self.goal_parcial_y = rospy.get_param("/park_sys/goal_parcial_y")
+		self.goal_parcial_theta = rospy.get_param("/park_sys/goal_parcial_theta")
+		
 		self.num_gen = num_gen
 		self.num_pop = num_pop
 		self.show_output = show_output
@@ -35,7 +42,7 @@ class Solver(object):
 		self.pop = []
 		self.filhos = []
 		for i in range(self.num_pop):
-			ind = Individuo(rand=True, initialSize = 20)
+			ind = Individuo(rand=True, initialSize = 10)
 			self.pop.append(ind)
 
 	def odomCallback(self, data):
@@ -49,10 +56,17 @@ class Solver(object):
 		roll = euler[0]
 		pitch = euler[1]
 		yaw = euler[2]
+
 		dx = abs(self.odom.pose.pose.position.x - self.goal_x)
 		dy = abs(self.odom.pose.pose.position.y - self.goal_y)
 		dtheta = abs(yaw - self.goal_theta)
-		self.dist = math.sqrt(dx*dx + dy*dy + dtheta*dtheta)
+
+		dxp = abs(self.odom.pose.pose.position.x - self.goal_parcial_x)
+		dyp = abs(self.odom.pose.pose.position.y - self.goal_parcial_y)
+		dthetap = abs(yaw - self.goal_parcial_theta)
+
+		self.dist_final = math.sqrt(dx*dx + dy*dy + dtheta*dtheta)
+		self.dist_parcial = math.sqrt(dxp*dxp + dyp*dyp + dthetap*dthetap)
 
 	def checkCollision(self):
 		return rospy.get_param("/crash")
@@ -60,7 +74,7 @@ class Solver(object):
 	def reset_position(self):
 		self.reset_stage()
 
-	def fitness(self, collision_penality=1.2):
+	def fitness(self, collision_penality=1.5):
 		if self.checkCollision():
 			return self.dist*collision_penality + 1.0
 		else:
@@ -70,13 +84,27 @@ class Solver(object):
 		self.reset_position()
 		t = Twist()
 
+		f1 = 9999
+		f2 = float('Inf')
+
 		for command in ind.getVelocidades():
 			if self.checkCollision():
 				break
-			t.linear.x = command[0]*0.5
+			t.linear.x = command[0]*1.0
 			t.angular.z = command[1]*1.0
 			self.pub_cmd_vel.publish(t)
 			self.rate.sleep()
+
+			f1 = min( f1, self.dist_parcial)
+			if f1 < 0.2:
+				f1 = 0
+
+			f2 = self.dist_final
+
+			self.dist = f2 #10*f1 + f2
+
+		print "f1:", f1, "\tf2:", f2
+
 		return self.fitness()
 
 	def run(self):
@@ -105,11 +133,13 @@ class Solver(object):
 
 				self.createFilhos()
 				self.calculateFitnessFilhos()
-				self.selectNextGeneration()
+				self.selectNextGeneration(size_torneio = 2)
 
 				self.updateStatiscs()
 				self.rate.sleep() 
 			break
+
+		plt.show()
 
 	def calculateFitnessPopulation(self):
 		for p in range(self.num_pop):
@@ -170,7 +200,7 @@ class Solver(object):
 								'best_size': best_size, 'worst_size': worst_size, 'average_size': average_size })
 		print "[Status]: LAST Generation Statistics:"
 		print "         ", self.statistics[-1]
-		
+
 
 		self.showStatistics()
 		
@@ -216,8 +246,8 @@ class Solver(object):
 		plt.xlabel('Generation')
 		plt.ylabel('Gene Size')
 
-		leg_b, = plt.plot(gen, best_size,    'r-', label='Best')
-		leg_w, = plt.plot(gen, worst_size,   'b-', label='Worst')
+		leg_b, = plt.plot(gen, best_size,    'r-', label='Highest')
+		leg_w, = plt.plot(gen, worst_size,   'b-', label='Lowest')
 		leg_a, = plt.plot(gen, average_size, 'g-', label='Average')
 
 		plt.legend(handles=[leg_b, leg_w, leg_a])

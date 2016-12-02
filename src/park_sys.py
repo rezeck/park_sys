@@ -35,7 +35,7 @@ class Solver(object):
 		self.pop = []
 		self.filhos = []
 		for i in range(self.num_pop):
-			ind = Individuo(rand=True, initialSize = 20)
+			ind = Individuo(rand=True, initialSize = (20,10))
 			self.pop.append(ind)
 
 	def odomCallback(self, data):
@@ -68,7 +68,7 @@ class Solver(object):
 
 	def test(self, ind):
 		self.reset_position()
-		
+
 		t = Twist()
 
 		for command in ind.getVelocidades():
@@ -158,7 +158,7 @@ class Solver(object):
 
 	def updateStatiscs(self):
 		population_fitness = [ i.getFitness() for i in self.pop ]
-		population_size = [ i.size() for i in self.pop ]
+		population_size = [ sum(i.size()) for i in self.pop ]
 		best_fit = min(population_fitness)
 		worst_fit = max(population_fitness)
 		average_fit = sum(population_fitness) / float(len(population_fitness))
@@ -216,8 +216,8 @@ class Solver(object):
 		plt.xlabel('Generation')
 		plt.ylabel('Gene Size')
 
-		leg_b, = plt.plot(gen, best_size,    'r-', label='Best')
-		leg_w, = plt.plot(gen, worst_size,   'b-', label='Worst')
+		leg_b, = plt.plot(gen, best_size,    'r-', label='Highest')
+		leg_w, = plt.plot(gen, worst_size,   'b-', label='Lowest')
 		leg_a, = plt.plot(gen, average_size, 'g-', label='Average')
 
 		plt.legend(handles=[leg_b, leg_w, leg_a])

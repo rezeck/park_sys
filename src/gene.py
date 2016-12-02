@@ -3,16 +3,15 @@ import random
 
 class Gene(object):
 	"""docstring for Gene"""
-	def __init__(self, velocidade = (0,0), rand = False):
+	def __init__(self, velocidade = (0,0), rand = False, sentidos = [-1, 1]):
 		super(Gene, self).__init__()
 		if not rand:
 			self.setVelocidades(velocidade)
 		else: 
-			self.setVelocidades(self.velocidadeAleatoria()) 
+			self.setVelocidades(self.velocidadeAleatoria(sentidos = sentidos)) 
 
 	def __str__(self):
 		return str(self.getVelocidades())
-
 
 	def getVelocidades(self):
 		return (self.linear, self.angular)
@@ -36,9 +35,9 @@ class Gene(object):
 	def getLinear(self):
 		return self.linear
 
-	def velocidadeAleatoria(self):
-		linear = random.sample([-1, 1],1)[0]
-		angular = random.sample([-1, 0, 1],1)[0]
+	def velocidadeAleatoria(self, sentidos = [-1, 1], direcoes = [-1, 0, 1] ):
+		linear = random.sample(sentidos,1)[0]
+		angular = random.sample(direcoes,1)[0]
 		return (linear, angular)
 
 		

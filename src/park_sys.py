@@ -147,7 +147,7 @@ class Solver(object):
 		todos.sort()
 
 		next_gen = []
-		next_gen.append(self.pop[0])
+		next_gen.append(todos[0])
 
 		while len(next_gen) < self.num_pop:
 			vencedor_index = min(random.sample(range(len(todos)), size_torneio))

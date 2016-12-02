@@ -6,13 +6,13 @@ include "car.inc"
 include "map.inc"
 include "sick.inc"
 
-paused 0
+paused 1
 # configure the GUI window
 window
 (
   size [ 958 716 ] # in pixels
-  scale 444.035   # pixels per meter
-  center [ -0.904  -1.765 ]
+  scale 227.860   # pixels per meter
+  center [ 0.438  -1.636 ]
   rotate [ 0.000  0.000]
   			
   show_data 1              # 1=on 0=off
@@ -33,7 +33,7 @@ car
 (		  
   # can refer to the robot by this name
   name "car"
-  pose [ -0.863 -1.648 0.000 0.000 ] 
+  pose [ 1.468 -1.852 0.000 -1.108 ] 
 
   # pioneer2dx's sonars	will be ranger:0 and the laser will be ranger:1
   # fancysicklaser( pose [ 0.000 0.000 0.000 0.000 ] ) 

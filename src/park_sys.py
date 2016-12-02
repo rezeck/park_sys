@@ -147,7 +147,9 @@ class Solver(object):
 			self.simulateFinal = True
 			self.changeToFinalGoal()
 			self.inicializarPopulacao(initialSize = 20)
-
+			self.calculateFitnessPopulation()
+			self.updateStatiscs()
+		
 			for g in range(1,self.num_gen):
 				print "################################"
 				print "[Status]: Generation tipo 2 #", g
@@ -163,6 +165,12 @@ class Solver(object):
 				if self.statistics[-1]['best'] < 0.05:
 					break
 
+
+			bestFin = self.getBestIndividuo()
+
+			while not rospy.is_shutdown():
+				self.test(best)
+				self.rate.sleep() 
 
 
 

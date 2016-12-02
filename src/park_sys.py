@@ -170,6 +170,7 @@ class Solver(object):
 								'best_size': best_size, 'worst_size': worst_size, 'average_size': average_size })
 		print "[Status]: LAST Generation Statistics:"
 		print "         ", self.statistics[-1]
+		
 
 		self.showStatistics()
 		

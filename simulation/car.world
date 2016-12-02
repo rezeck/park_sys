@@ -33,7 +33,9 @@ car
 (		  
   # can refer to the robot by this name
   name "car"
-  pose [ -0.863 -1.648 0.000 0.000 ] 
+  #pose [ -0.863 -1.648 0.000 0.000 ] 
+  pose [ 1.863 -1.648 0.000 0.000 ] 
+  #pose [ -2 1.000 0.000 -90 ] 
 
   # pioneer2dx's sonars	will be ranger:0 and the laser will be ranger:1
   # fancysicklaser( pose [ 0.000 0.000 0.000 0.000 ] ) 

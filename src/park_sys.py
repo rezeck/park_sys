@@ -35,7 +35,7 @@ class Solver(object):
 		self.pop = []
 		self.filhos = []
 		for i in range(self.num_pop):
-			ind = Individuo(rand=True, initialSize = (20,10))
+			ind = Individuo(rand=True, initialSize = (15,10))
 			self.pop.append(ind)
 
 	def odomCallback(self, data):
@@ -148,13 +148,15 @@ class Solver(object):
 		todos.sort()
 
 		next_gen = []
-		next_gen.append(self.pop[0])
+		next_gen.append(todos[0])
 
 		while len(next_gen) < self.num_pop:
 			vencedor_index = min(random.sample(range(len(todos)), size_torneio))
 			next_gen.append(todos.pop(vencedor_index))
 
 		self.pop = next_gen
+		print "pop fitness:\n\t", [t.getFitness() for t in self.pop ]
+
 
 	def updateStatiscs(self):
 		population_fitness = [ i.getFitness() for i in self.pop ]

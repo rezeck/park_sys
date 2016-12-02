@@ -12,7 +12,7 @@ class Individuo(object):
 		self.genes_final = genes_final
 		self.initialSize = initialSize
 		self.fitness = sys.maxint
-		self.probability = {'alterar': 0.3, 'acrescentar': 0.3, 'remover': 0.3}
+		self.probability = {'alterar': 0.3, 'acrescentar': 0.3, 'remover': 0.3, 'cruzar': 1.0}
 
 		if rand:
 			self.inicializarAleatorio()
@@ -104,21 +104,25 @@ class Individuo(object):
 		minLen = min(parent1.size()[0],parent2.size()[0])
 		minLenFim = min(parent1.size()[1],parent2.size()[1])
 
-		k = self.size()[0]/float(sum(self.size()))
-		if random.random() < k:
-			pos = random.randint(0, minLen-1)
-			genes1 = parent1.getGenes()[:pos] + parent2.getGenes()[pos:]
-			genes2 = parent2.getGenes()[:pos] + parent1.getGenes()[pos:]
-			genes_final1 = parent2.getGenesFinal()
-			genes_final2 = parent1.getGenesFinal()
-		else:
-			pos = random.randint(0, minLenFim-1)
-			genes1 = parent1.getGenes()
-			genes2 = parent2.getGenes()
-			genes_final1 = parent1.getGenesFinal()[:pos] + parent2.getGenesFinal()[pos:]
-			genes_final2 = parent2.getGenesFinal()[:pos] + parent1.getGenesFinal()[pos:]
-		
+		if random.random() < self.probability['cruzar']:
 
+			k = self.size()[0]/float(sum(self.size()))
+			if random.random() < k:
+				pos = random.randint(0, minLen-1)
+				genes1 = parent1.getGenes()[:pos] + parent2.getGenes()[pos:]
+				genes2 = parent2.getGenes()[:pos] + parent1.getGenes()[pos:]
+				genes_final1 = parent2.getGenesFinal()
+				genes_final2 = parent1.getGenesFinal()
+			else:
+				pos = random.randint(0, minLenFim-1)
+				genes1 = parent1.getGenes()
+				genes2 = parent2.getGenes()
+				genes_final1 = parent1.getGenesFinal()[:pos] + parent2.getGenesFinal()[pos:]
+				genes_final2 = parent2.getGenesFinal()[:pos] + parent1.getGenesFinal()[pos:]
+		else:
+			(genes1, genes_final1) = (parent1.getGenes(), parent1.getGenesFinal())
+			(genes2, genes_final2) = (parent2.getGenes(), parent2.getGenesFinal())
+			
 		filho1 = Individuo(genes = genes1, genes_final = genes_final1)
 		filho2 = Individuo(genes = genes2, genes_final = genes_final2)
 

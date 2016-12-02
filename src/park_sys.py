@@ -35,11 +35,7 @@ class Solver(object):
 		print "[Status]: Generation size", num_gen, "and Population size ", num_pop
 		print "[Status]: Creating population..."
 		
-		self.pop = []
-		self.filhos = []
-		for i in range(self.num_pop):
-			ind = Individuo(rand=True, initialSize = 20)
-			self.pop.append(ind)
+		self.inicializarPopulacao(initialSize = 20):
 
 	def getBestIndividuo(self):
 		self.pop.sort()
@@ -170,6 +166,12 @@ class Solver(object):
 
 			while not rospy.is_shutdown():
 				self.test(best)
+
+				fig = plt.figure(1)
+				plt.pause(0.0001)
+
+				fig = plt.figure(1)
+				plt.pause(0.0001)
 				self.rate.sleep() 
 
 

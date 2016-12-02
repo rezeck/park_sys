@@ -165,7 +165,7 @@ class Solver(object):
 			bestFin = self.getBestIndividuo()
 
 			while not rospy.is_shutdown():
-				self.test(best)
+				self.test(bestFin)
 
 				fig = plt.figure(1)
 				plt.pause(0.0001)

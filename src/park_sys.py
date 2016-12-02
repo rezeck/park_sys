@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 
 class Solver(object):
 	"""docstring for Solver"""
-	def __init__(self, num_gen = 200, num_pop = 30, show_output = True):
+	def __init__(self, num_gen = 200, num_pop = 30, show_output = False):
 		super(Solver, self).__init__()
 		self.laser = None
 		self.odom = None
@@ -98,7 +98,7 @@ class Solver(object):
 		commandVel = ind.getVelocidades()
 
 		if self.simulateFinal:
-			commandVel = self.bestPartialInd.getVelocidades + commandVel
+			commandVel = self.bestPartialInd.getVelocidades() + commandVel
 
 		for command in commandVel:
 			if self.checkCollision():
@@ -169,15 +169,19 @@ class Solver(object):
 
 	def calculateFitnessPopulation(self):
 		for p in range(self.num_pop):
-			print "[Status]: Testing individo ", p
+			if self.show_output:
+				print "[Status]: Testing individo ", p
 			self.pop[p].fitness = self.test(self.pop[p])
-			print "          Fitness ", self.pop[p].fitness
+			if self.show_output:
+				print "          Fitness ", self.pop[p].fitness
 
 	def calculateFitnessFilhos(self):
 		for p in range(len(self.filhos)):
-			print "[Status]: Testing filho ", p
+			if self.show_output:
+				print "[Status]: Testing filho ", p
 			self.filhos[p].fitness = self.test(self.filhos[p])
-			print "          Fitness ", self.filhos[p].fitness
+			if self.show_output:
+				print "          Fitness ", self.filhos[p].fitness
 
 
 	def torneio(self, size = 2):
@@ -214,8 +218,9 @@ class Solver(object):
 	def updateStatiscs(self):
 		population_fitness = [ i.getFitness() for i in self.pop ]
 		population_size = [ i.size() for i in self.pop ]
+
 		best_fit = min(population_fitness)
-		worst_fit = max(population_fitness)
+		worst_fit = min(max(population_fitness), 10)
 		average_fit = sum(population_fitness) / float(len(population_fitness))
 		
 		best_size = min(population_size)
